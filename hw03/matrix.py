@@ -82,7 +82,7 @@ class Matrix:
         raise NotImplementedError
 
     @classmethod
-    def from_file(cls, path: str) -> "contextlib.AbstractContextManager[Matrix]":
+    def from_file(cls, path: str) -> contextlib.AbstractContextManager[Matrix]:
         """Контекстный менеджер для чтения матрицы из файла.
 
         Использование::

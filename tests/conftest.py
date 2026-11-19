@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-STUDENT_FILE = Path(__file__).resolve().parent.parent / "STUDENT.md"
+STUDENT_FILE = Path.cwd() / "STUDENT.md"
 HW_NUMBER = 3
-SEMESTER = "2026-spring"
+SEMESTER = "2027-spring"
 
 VARIANT_DESCRIPTORS = {
     0: ("Validated", "Logged", "Cached"),
@@ -39,6 +39,10 @@ def get_variant(name: str, n_variants: int, hw: int = HW_NUMBER) -> int:
     return int(h[:8], 16) % n_variants
 
 
+def pytest_configure(config: pytest.Config) -> None:
+    config.addinivalue_line("markers", "descriptor(name): descriptor required by the variant")
+
+
 @pytest.fixture
 def student_name() -> str:
     return _read_student_name()
@@ -53,3 +57,12 @@ def variant(student_name: str) -> int:
 def descriptor_names(variant: int) -> tuple[str, str, str]:
     """Возвращает кортеж из трёх имён дескрипторов для варианта студента."""
     return VARIANT_DESCRIPTORS[variant]
+
+
+@pytest.fixture(autouse=True)
+def skip_unselected_descriptor(
+    request: pytest.FixtureRequest, descriptor_names: tuple[str, str, str]
+) -> None:
+    marker = request.node.get_closest_marker("descriptor")
+    if marker and marker.args[0] not in descriptor_names:
+        pytest.skip(f"{marker.args[0]} не входит в вариант студента ({descriptor_names})")

@@ -9,39 +9,15 @@ import logging
 import pytest
 
 from hw03.descriptors import Cached, Logged, Observable, ReadOnly, Typed, Validated
-from tests.conftest import VARIANT_DESCRIPTORS, get_variant
 
 # ---------------------------------------------------------------------------
 # Helper: skip if descriptor not in variant
 # ---------------------------------------------------------------------------
 
-_STUDENT_FILE = __import__("pathlib").Path(__file__).resolve().parent.parent / "STUDENT.md"
-
-
-def _current_descriptor_names() -> tuple[str, str, str]:
-    """Получить имена дескрипторов текущего варианта (без fixtures)."""
-    try:
-        text = _STUDENT_FILE.read_text(encoding="utf-8")
-        name = ""
-        for line in text.splitlines():
-            if line.startswith("name:"):
-                name = line.split(":", 1)[1].strip()
-                break
-        if not name:
-            return ("", "", "")
-        v = get_variant(name, n_variants=6)
-        return VARIANT_DESCRIPTORS[v]
-    except Exception:
-        return ("", "", "")
-
 
 def _skip_unless(descriptor_name: str) -> pytest.MarkDecorator:
-    """Пропустить тест, если дескриптор не в варианте студента."""
-    names = _current_descriptor_names()
-    return pytest.mark.skipif(
-        descriptor_name not in names,
-        reason=f"{descriptor_name} не входит в вариант студента ({names})",
-    )
+    """Пометить тест дескриптором; conftest пропустит его вне варианта."""
+    return pytest.mark.descriptor(descriptor_name)
 
 
 # ---------------------------------------------------------------------------
